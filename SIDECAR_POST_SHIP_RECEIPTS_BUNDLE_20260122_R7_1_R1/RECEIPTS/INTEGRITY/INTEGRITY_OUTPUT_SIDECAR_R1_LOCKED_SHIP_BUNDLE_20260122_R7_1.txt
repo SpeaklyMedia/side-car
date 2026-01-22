@@ -1,0 +1,28 @@
+## unzip -t
+Archive:  /mnt/data/SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.zip
+    testing: 04_BUILD_PROOF/BUILD_LOG.txt   OK
+    testing: 01_APP/sidecar_r1_app.zip   OK
+    testing: 02_RECEIPTS/MANIFEST.json   OK
+    testing: 02_RECEIPTS/SHA256SUMS.txt   OK
+    testing: 03_DOCS/DIFF_SUMMARY_20260122_R1.md   OK
+    testing: 03_DOCS/THIRD_PARTY_NOTICES.md   OK
+    testing: 03_DOCS/DEV_RUN_LOG_20260122_R1.md   OK
+    testing: 05_GOVERNANCE/release_pair_pack.required.json   OK
+    testing: 06_RELEASE_MANAGER/RELEASE_NOTES.md   OK
+    testing: 06_RELEASE_MANAGER/release_manifest.json   OK
+    testing: 06_RELEASE_MANAGER/SHIP_CHECKLIST.md   OK
+No errors detected in compressed data of /mnt/data/SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.zip.
+
+## sha256sum -c 02_RECEIPTS/SHA256SUMS.txt
+01_APP/sidecar_r1_app.zip: OK
+03_DOCS/DEV_RUN_LOG_20260122_R1.md: OK
+03_DOCS/DIFF_SUMMARY_20260122_R1.md: OK
+03_DOCS/THIRD_PARTY_NOTICES.md: OK
+04_BUILD_PROOF/BUILD_LOG.txt: OK
+05_GOVERNANCE/release_pair_pack.required.json: OK
+06_RELEASE_MANAGER/RELEASE_NOTES.md: OK
+06_RELEASE_MANAGER/SHIP_CHECKLIST.md: OK
+06_RELEASE_MANAGER/release_manifest.json: OK
+02_RECEIPTS/MANIFEST.json: OK
+
+exit_codes: unzip_t=0, sha256sum_c=0

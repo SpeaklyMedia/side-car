@@ -1,0 +1,46 @@
+{
+  "name": "SIDECAR_POST_SHIP_RECEIPTS_BUNDLE_20260122_R7_1_R1",
+  "created_at": "2026-01-22T20:51:25Z",
+  "inputs": {
+    "ship_zip": "SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.zip",
+    "integrity_log": "INTEGRITY_OUTPUT_SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.txt"
+  },
+  "files": [
+    {
+      "path": "RECEIPTS/02_RECEIPTS/MANIFEST.json",
+      "bytes": 1646,
+      "sha256": "b73771247cdafceb17672230755d6f7ffed71164c98ef91dadb0538b210d2b5e",
+      "source": "local_build"
+    },
+    {
+      "path": "RECEIPTS/02_RECEIPTS/SHA256SUMS.txt",
+      "bytes": 1003,
+      "sha256": "45ceff508903f6eed81e8bf5e333547ad026971a5fe16f933efcd193d38d43be",
+      "source": "local_build"
+    },
+    {
+      "path": "RECEIPTS/04_BUILD_PROOF/BUILD_LOG.txt",
+      "bytes": 713,
+      "sha256": "5305133ee33667c6097b9e6fe433b32f3ac3e1010c6038d4dfaac70fa7c8b1df",
+      "source": "local_build"
+    },
+    {
+      "path": "RECEIPTS/INTEGRITY/INTEGRITY_OUTPUT_SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.txt",
+      "bytes": 1213,
+      "sha256": "7d198038e52f9e16eaea0ed3f409fbcf08eaa1b845a7d6a85f99e8a72a1f0e7b",
+      "source": "local_build"
+    },
+    {
+      "path": "RECEIPTS/SHIP/SHA256SUMS_SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.txt",
+      "bytes": 114,
+      "sha256": "d92eaefdd8af0d898a058d68a33766fe1514dd6ebc3a592db31d05b97ab240f4",
+      "source": "local_build"
+    },
+    {
+      "path": "RECEIPTS/SHIP/SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7_1.zip",
+      "bytes": 29886987,
+      "sha256": "f29f51bea39d803e58ddc2d77d24c4d5d92240ebeb2fd019d5b89111e92f9422",
+      "source": "local_build"
+    }
+  ]
+}

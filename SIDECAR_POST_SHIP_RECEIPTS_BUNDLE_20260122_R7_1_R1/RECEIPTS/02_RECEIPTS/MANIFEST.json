@@ -1,0 +1,51 @@
+{
+  "name": "SIDECAR_R1_LOCKED_SHIP_BUNDLE_20260122_R7",
+  "created_at": "2026-01-22T20:23:27.000000Z",
+  "files": [
+    {
+      "path": "01_APP/sidecar_r1_app.zip",
+      "bytes": 30529896,
+      "sha256": "c4c2c6e81dce26e57904bd84d5e212cd2a3a77d855ad5f8605a11938475d2641"
+    },
+    {
+      "path": "03_DOCS/DEV_RUN_LOG_20260122_R1.md",
+      "bytes": 5450,
+      "sha256": "3d383443ab086bce90be9d9203f1cbd15b52fa18a40a920d1cbc9c94603b96bb"
+    },
+    {
+      "path": "03_DOCS/DIFF_SUMMARY_20260122_R1.md",
+      "bytes": 2160,
+      "sha256": "ea6c56eacb4526ae2ce672406adf49d41da6f6cacf4203d705a2277c34bb07c1"
+    },
+    {
+      "path": "03_DOCS/THIRD_PARTY_NOTICES.md",
+      "bytes": 2692,
+      "sha256": "7bb43b2128eaec1864f6d5db86c020136b41cac4457ca1c577f6c2da8520790a"
+    },
+    {
+      "path": "04_BUILD_PROOF/BUILD_LOG.txt",
+      "bytes": 713,
+      "sha256": "5305133ee33667c6097b9e6fe433b32f3ac3e1010c6038d4dfaac70fa7c8b1df"
+    },
+    {
+      "path": "05_GOVERNANCE/release_pair_pack.required.json",
+      "bytes": 474,
+      "sha256": "1794d6bae767966060eeaa5ca1eb3766fe14600b6c6937bc90512c9e950ea4f1"
+    },
+    {
+      "path": "06_RELEASE_MANAGER/RELEASE_NOTES.md",
+      "bytes": 1746,
+      "sha256": "48a33e72c1f758ffcf625a8b22cf51ee54f9d1e82875114ed769b5ae76ee60e2"
+    },
+    {
+      "path": "06_RELEASE_MANAGER/SHIP_CHECKLIST.md",
+      "bytes": 1596,
+      "sha256": "6868c57765e626f20f532dd6e404abc92d14d89e02eeea5d2626a1d39695bcb7"
+    },
+    {
+      "path": "06_RELEASE_MANAGER/release_manifest.json",
+      "bytes": 2664,
+      "sha256": "40de57cba53133e4fdcb05c49797d8bf08d0ae08efd1962386cd82e2d0bf2ece"
+    }
+  ]
+}
