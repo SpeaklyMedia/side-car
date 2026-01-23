@@ -171,6 +171,9 @@
   color: var(--tf-muted);
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tf-kpi-value {
