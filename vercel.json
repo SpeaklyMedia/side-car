@@ -2,7 +2,7 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "node -v && npm -v && (npx npm@9.9.2 ci --include=dev --no-audit --no-fund || npx npm@10.9.2 ci --include=dev --no-audit --no-fund)",
+  "installCommand": "node -v && npm -v && npm config set registry https://registry.npmjs.org/ && (npx npm@9.9.2 ci --include=dev --no-audit --no-fund || npx npm@10.9.2 ci --include=dev --no-audit --no-fund)",
   "devCommand": "npm run dev",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
