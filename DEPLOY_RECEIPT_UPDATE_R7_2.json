@@ -1,0 +1,7 @@
+{
+  "deployment_url": "https://side-car.vercel.app/",
+  "verified_at_utc": "2026-01-27T03:23:22Z",
+  "http_status_root": 200,
+  "vercel": { "cache": "HIT", "root_directory": "sidecar_mvp_skeleton", "project_name": "UNKNOWN", "deployment_id": "UNKNOWN" },
+  "git": { "repo": "https://github.com/SpeaklyMedia/side-car.git", "branch": "MVP", "commit": "ba4b6300f9856241e8565e76dbb939a9bbeaea9b", "tag": "SIDECAR_R7_2_20260126" }
+}
