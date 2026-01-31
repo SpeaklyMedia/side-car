@@ -1,0 +1,22 @@
+{
+  "version": "1.0.1",
+  "durations_ms": {
+    "hero_reveal_stage": 220,
+    "hero_value_settle": 680,
+    "list_enter": 260,
+    "list_exit": 220,
+    "progress_fill": 620,
+    "progress_flow_loop": 1600,
+    "scene_transition": 900
+  },
+  "easing": {
+    "soft_in_out": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+    "settle_out": "cubic-bezier(0.1, 0.9, 0.2, 1)",
+    "linear": "linear"
+  },
+  "notes": [
+    "Keep motion slow and breathable.",
+    "No constant loops unless loading/live/in-progress.",
+    "Complete state must settle into stillness."
+  ]
+}

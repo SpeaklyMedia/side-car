@@ -16,29 +16,32 @@ export interface ErrorPanelProps {
  */
 export const ErrorPanel: React.FC<ErrorPanelProps> = ({ errors, warnings = [], onEdit }) => {
   return (
-    <div className="tf-panel tf-error-panel" style={{ margin: '16px auto', maxWidth: '720px', padding: '16px' }}>
-      <h2 className="tf-error-title">Quest Log: Import Errors</h2>
-      <p className="tf-item-muted">Repair the payload to continue the run.</p>
-      <ul className="tf-error-list">
+    <div className="max-w-md mx-auto p-4 mt-4 bg-red-100 border border-red-200 rounded-lg">
+      <h2 className="font-semibold text-red-700 mb-2">Cannot render roadmap</h2>
+      <p className="text-sm text-red-700 mb-2">Please fix the following errors in your JSON payload:</p>
+      <ul className="text-sm text-red-700 list-disc pl-5 space-y-1">
         {errors.map((err, idx) => (
           <li key={idx}>
-            <span>{err.path || 'root'}</span>: {err.message}
+            <span className="font-mono">{err.path}</span>: {err.message}
           </li>
         ))}
       </ul>
       {warnings.length > 0 && (
-        <div className="tf-warning-panel" style={{ marginTop: '12px', padding: '12px' }}>
-          <p className="tf-warning-title">Warnings</p>
-          <ul className="tf-item-muted" style={{ marginTop: '8px', paddingLeft: '16px' }}>
+        <div className="mt-3 p-3 bg-yellow-100 border border-yellow-200 rounded">
+          <p className="text-sm font-semibold text-yellow-700 mb-1">Warnings</p>
+          <ul className="text-sm text-yellow-700 list-disc pl-5 space-y-1">
             {warnings.map((warn, idx) => (
               <li key={idx}>
-                <span>{warn.path || 'root'}</span>: {warn.message}
+                <span className="font-mono">{warn.path}</span>: {warn.message}
               </li>
             ))}
           </ul>
         </div>
       )}
-      <button className="tf-btn tf-btn-primary" style={{ marginTop: '12px', width: '100%' }} onClick={onEdit}>
+      <button
+        className="mt-4 block w-full bg-red-600 text-white py-2 px-4 rounded shadow hover:bg-red-700 text-sm"
+        onClick={onEdit}
+      >
         Edit Data
       </button>
     </div>
