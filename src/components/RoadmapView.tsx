@@ -3,6 +3,7 @@ import type { Roadmap } from '../types';
 import { computeMasterProgress, computeOverallProgress, computePhaseProgress } from '../utils';
 import { PhaseCard } from './PhaseCard';
 import { ProgressBar } from './ProgressBar';
+import { Card } from '../ui/Card';
 
 export interface RoadmapViewProps {
   roadmap: Roadmap;
@@ -46,7 +47,7 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
   return (
     <div>
       {/* Summary strip for the roadmap */}
-      <div className="space-y-1 mb-4 rounded-xl bg-white/80 backdrop-blur shadow p-3">
+      <Card className="space-y-1 mb-4 p-3">
         {/* Master progress bar */}
         <div className="flex flex-col gap-1">
           <ProgressBar value={masterProgress} />
@@ -58,7 +59,7 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
             <span>Blocked: {blockedItems}</span>
           </div>
         </div>
-      </div>
+      </Card>
       {/* Phase cards */}
       <div className="space-y-4">
         {roadmap.phases.map((phase) => (
