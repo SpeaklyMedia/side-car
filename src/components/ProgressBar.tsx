@@ -21,9 +21,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ value, label, classNam
   const clamped = Math.min(Math.max(value, 0), 100);
   const displayLabel = label ?? `${clamped}%`;
   return (
-    <div className={`tf-progress ${className ?? ''}`.trim()} aria-label={`Progress ${clamped}%`}>
-      <div className="tf-progress-fill" style={{ width: `${clamped}%` }} />
-      <span className="tf-sr-only">{displayLabel}</span>
+    <div className={`w-full h-2 bg-gray-200 rounded overflow-hidden ${className ?? ''}`.trim()} aria-label={`Progress ${clamped}%`}>
+      <div className="h-2 bg-green-500 rounded" style={{ width: `${clamped}%` }} />
+      {/* Text label on top of the bar */}
+      <span className="sr-only">{displayLabel}</span>
     </div>
   );
 };

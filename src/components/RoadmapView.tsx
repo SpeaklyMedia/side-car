@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import type { Roadmap } from '../types';
-import { computePhaseProgress } from '../utils';
+import { computeMasterProgress, computeOverallProgress, computePhaseProgress } from '../utils';
 import { PhaseCard } from './PhaseCard';
+import { ProgressBar } from './ProgressBar';
 
 export interface RoadmapViewProps {
   roadmap: Roadmap;
@@ -9,23 +10,13 @@ export interface RoadmapViewProps {
   onFocus?: () => void;
   /** ID of the current item for highlighting. */
   currentItemId?: string;
-  /** When provided, ensure the matching phase is expanded. */
-  forceExpandPhaseId?: string | null;
-  /** Whether the view is in Client View mode (deliverable filtering). */
-  clientView?: boolean;
 }
 
 /**
  * View for a roadmap. Displays a summary bar and a list of phases with
  * collapsible items.
  */
-export const RoadmapView: React.FC<RoadmapViewProps> = ({
-  roadmap,
-  onFocus,
-  currentItemId,
-  forceExpandPhaseId,
-  clientView
-}) => {
+export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, currentItemId }) => {
   // Track which phases are expanded. Default: first incomplete phase expanded.
   const [expandedPhases, setExpandedPhases] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
@@ -41,28 +32,45 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({
     });
     return map;
   });
-
-  useEffect(() => {
-    if (!forceExpandPhaseId) return;
-    setExpandedPhases((prev) => ({ ...prev, [forceExpandPhaseId]: true }));
-  }, [forceExpandPhaseId]);
+  // Compute counts for summary strip.
+  const totalItems = roadmap.phases.reduce((sum, p) => sum + p.items.length, 0);
+  const doneItems = roadmap.phases.reduce((sum, p) => sum + p.items.filter((i) => i.status === 'done').length, 0);
+  const blockedItems = roadmap.phases.reduce((sum, p) => sum + p.items.filter((i) => i.status === 'blocked').length, 0);
+  const overallProgress = computeOverallProgress(roadmap);
+  const masterProgress = computeMasterProgress(roadmap);
 
   const togglePhase = (phaseId: string) => {
     setExpandedPhases((prev) => ({ ...prev, [phaseId]: !prev[phaseId] }));
   };
 
   return (
-    <div className="tf-stack">
-      {roadmap.phases.map((phase) => (
-        <PhaseCard
-          key={phase.phase_id}
-          phase={phase}
-          expanded={!!expandedPhases[phase.phase_id]}
-          onToggle={() => togglePhase(phase.phase_id)}
-          currentItemId={currentItemId}
-          clientView={clientView}
-        />
-      ))}
+    <div>
+      {/* Summary strip for the roadmap */}
+      <div className="space-y-1 mb-4">
+        {/* Master progress bar */}
+        <div className="flex flex-col gap-1">
+          <ProgressBar value={masterProgress} />
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Overall: {overallProgress}%</span>
+            <span>Deliverables: {masterProgress}%</span>
+            <span>Items: {totalItems}</span>
+            <span>Done: {doneItems}</span>
+            <span>Blocked: {blockedItems}</span>
+          </div>
+        </div>
+      </div>
+      {/* Phase cards */}
+      <div className="space-y-4">
+        {roadmap.phases.map((phase) => (
+          <PhaseCard
+            key={phase.phase_id}
+            phase={phase}
+            expanded={!!expandedPhases[phase.phase_id]}
+            onToggle={() => togglePhase(phase.phase_id)}
+            currentItemId={currentItemId}
+          />
+        ))}
+      </div>
     </div>
   );
 };

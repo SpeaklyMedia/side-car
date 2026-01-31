@@ -45,12 +45,16 @@ export const RoadmapSelector: React.FC<RoadmapSelectorProps> = ({
   });
 
   return (
-    <div className="tf-overlay" role="dialog" aria-modal="true">
-      <div className="tf-dialog">
-        <h3 className="tf-panel-title">Select Roadmap</h3>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black bg-opacity-50"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-md p-4 shadow-lg">
+        <h3 className="font-semibold mb-2">Select Roadmap</h3>
         {/* Search input */}
-        <div style={{ marginTop: '8px' }}>
-          <label htmlFor="roadmap-search" className="tf-sr-only">
+        <div className="mb-3">
+          <label htmlFor="roadmap-search" className="sr-only">
             Search projects or roadmaps
           </label>
           <input
@@ -58,21 +62,20 @@ export const RoadmapSelector: React.FC<RoadmapSelectorProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="tf-input"
+            className="w-full px-3 py-2 border rounded text-sm"
             placeholder="Search projects or roadmaps"
           />
         </div>
-        <div className="tf-stack" style={{ marginTop: '12px', maxHeight: '320px', overflowY: 'auto' }}>
+        <div className="space-y-4 max-h-80 overflow-y-auto">
           {filteredProjects.length === 0 ? (
-            <div className="tf-item-muted">No results</div>
+            <div className="text-sm text-gray-500">No results</div>
           ) : (
             filteredProjects.map((project) => (
-              <div key={project.project_id} className="tf-panel">
+              <div key={project.project_id} className="border rounded-lg overflow-hidden">
                 <button
                   type="button"
                   role="button"
-                  className="tf-btn tf-btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                  className="w-full text-left px-3 py-2 bg-gray-50 hover:bg-gray-100 font-medium"
                   onClick={() => {
                     // Placeholder for potential collapse logic
                   }}
@@ -85,12 +88,11 @@ export const RoadmapSelector: React.FC<RoadmapSelectorProps> = ({
                     type="button"
                     role="button"
                     key={roadmap.roadmap_id}
-                    className={`tf-btn tf-btn-ghost ${
+                    className={`w-full text-left px-6 py-2 border-t text-sm ${
                       project.project_id === selectedProjectId && roadmap.roadmap_id === selectedRoadmapId
-                        ? 'tf-btn-teal'
-                        : ''
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'bg-white hover:bg-gray-50'
                     }`}
-                    style={{ width: '100%', justifyContent: 'flex-start', borderTop: '2px solid var(--tf-border)' }}
                     onClick={() => {
                       onSelect(project.project_id, roadmap.roadmap_id);
                       onClose();
@@ -106,8 +108,7 @@ export const RoadmapSelector: React.FC<RoadmapSelectorProps> = ({
         <button
           type="button"
           role="button"
-          className="tf-btn tf-btn-ghost"
-          style={{ marginTop: '12px', width: '100%' }}
+          className="mt-4 w-full text-center py-2 text-blue-600 font-medium"
           onClick={onClose}
         >
           Cancel

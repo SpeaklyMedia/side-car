@@ -1,0 +1,15 @@
+{
+  "default": "scene_clean_white",
+  "scenes": {
+    "scene_clean_white": {
+      "label": "Clean White",
+      "tone": "bright",
+      "notes": "Neutral full-bleed base"
+    },
+    "scene_soft_glow": {
+      "label": "Soft Glow",
+      "tone": "bright",
+      "notes": "Pivotal moment emphasis"
+    }
+  }
+}

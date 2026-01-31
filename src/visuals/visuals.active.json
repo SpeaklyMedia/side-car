@@ -1,0 +1,11 @@
+{
+  "active": {
+    "visualization": "hud_v1",
+    "motion": "lux_v1",
+    "scenes": "cleanBright_v1"
+  },
+  "policy": {
+    "edit_scope": "Codex may change packs/* and visuals.active.json only. Do not modify core ingestion/state logic.",
+    "reduce_motion": "must_support"
+  }
+}
