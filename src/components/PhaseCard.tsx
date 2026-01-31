@@ -30,7 +30,10 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
         aria-expanded={expanded}
       >
         <div className="flex flex-col">
-          <h2 className="font-medium text-sm sm:text-base">{phase.phase_name}</h2>
+          <h2 className="font-medium text-sm sm:text-base">
+            <span className="mr-2" aria-hidden="true">🧩</span>
+            {phase.phase_name}
+          </h2>
           {phase.phase_desc && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{phase.phase_desc}</p>}
         </div>
         <div className="flex items-center gap-2">
@@ -84,7 +87,10 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
                 className={`p-3 flex justify-between items-center ${highlight ? 'bg-blue-50' : ''}`.trim()}
               >
                 <div className="flex flex-col">
-                  <span className="font-medium text-gray-900 truncate max-w-xs sm:max-w-md md:max-w-lg">{item.title}</span>
+                  <span className="font-medium text-gray-900 truncate max-w-xs sm:max-w-md md:max-w-lg">
+                    <span className="mr-2" aria-hidden="true">•</span>
+                    {item.title}
+                  </span>
                   {/* Show detail/blocker_reason when provided */}
                   {item.detail && (
                     <span className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.detail}</span>

@@ -411,6 +411,13 @@ function App() {
     handleCopyShareLink(projectId, roadmapId);
   };
 
+  const getProjectEmoji = (projectName: string) => {
+    const name = projectName.toLowerCase();
+    if (name.includes('side-car') || name.includes('sidecar')) return '🛵';
+    if (name.includes('grand crew hospitality')) return '🍔🍺';
+    return '🗂️';
+  };
+
   // Handle selection of project and roadmap from the selector.
   const handleSelect = (projectId: string, roadmapId: string) => {
     setSelectedProjectId(projectId);
@@ -478,8 +485,12 @@ function App() {
           {/* Sticky header for project */}
           <Card className="sticky top-0 p-4 flex flex-col gap-2 z-50">
             <div className="flex flex-wrap justify-between items-center gap-2">
-              <h1 className="text-lg font-semibold truncate max-w-xs sm:max-w-sm">{currentProject.project_name}</h1>
+              <h1 className="text-lg font-semibold truncate max-w-xs sm:max-w-sm">
+                <span className="mr-2" aria-hidden="true">{getProjectEmoji(currentProject.project_name)}</span>
+                {currentProject.project_name}
+              </h1>
               <Button variant="link" size="sm" onClick={() => setShowSelector(true)}>
+                <span className="mr-1" aria-hidden="true">🧭</span>
                 {currentRoadmap.roadmap_name}
               </Button>
             </div>
@@ -596,7 +607,10 @@ function App() {
                     setSelectedRoadmapId(defaultRoadmap);
                   }}
                 >
-                  <div className="font-medium text-gray-900">{project.project_name}</div>
+                  <div className="font-medium text-gray-900">
+                    <span className="mr-2" aria-hidden="true">{getProjectEmoji(project.project_name)}</span>
+                    {project.project_name}
+                  </div>
                   {project.project_desc && (
                     <div className="text-xs text-gray-500 mt-1 line-clamp-2">{project.project_desc}</div>
                   )}
