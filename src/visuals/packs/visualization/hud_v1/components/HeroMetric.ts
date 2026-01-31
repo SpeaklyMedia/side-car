@@ -130,7 +130,7 @@ export function HeroMetric(props: HeroMetricProps) {
           {
             style: {
               fontSize: 12,
-              color: delta > 0 ? "rgba(0,120,60,0.9)" : "rgba(160,40,40,0.9)",
+              color: typeof delta === "number" && delta > 0 ? "rgba(0,120,60,0.9)" : "rgba(160,40,40,0.9)",
               opacity: 0.9
             }
           },

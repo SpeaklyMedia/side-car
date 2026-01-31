@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import type { Phase } from '../types';
 import { computePhaseProgress } from '../utils';
 import { ProgressBar } from './ProgressBar';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 export interface PhaseCardProps {
   phase: Phase;
@@ -20,7 +22,7 @@ export interface PhaseCardProps {
 export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle, currentItemId }) => {
   const phaseProgress = computePhaseProgress(phase);
   return (
-    <section id={`phase-${phase.phase_id}`} className="rounded-xl bg-white/80 backdrop-blur shadow">
+    <Card id={`phase-${phase.phase_id}`}>
       {/* Phase header */}
       <header
         className="flex justify-between items-center p-3 cursor-pointer"
@@ -46,27 +48,32 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
             let statusClass = '';
             let statusLabel: React.ReactNode;
             let statusIcon: React.ReactNode;
+            let badgeClass = '';
             switch (item.status) {
               case 'done':
                 statusClass = 'text-green-600';
                 statusLabel = 'Done';
                 statusIcon = '✅';
+                badgeClass = 'bg-green-100 text-green-700';
                 break;
               case 'in_progress':
                 statusClass = 'text-orange-600';
                 statusLabel = `${item.progress ?? 0}%`;
                 statusIcon = '⏳';
+                badgeClass = 'bg-orange-100 text-orange-700';
                 break;
               case 'blocked':
                 statusClass = 'text-red-600';
                 statusLabel = `${item.progress ?? 0}%`;
                 statusIcon = '⛔';
+                badgeClass = 'bg-red-100 text-red-700';
                 break;
               case 'not_started':
               default:
                 statusClass = 'text-gray-500';
                 statusLabel = 'Not started';
                 statusIcon = '⭕';
+                badgeClass = 'bg-gray-100 text-gray-600';
             }
             // Highlight the current item, if provided
             const highlight = currentItemId && item.item_id === currentItemId;
@@ -86,15 +93,15 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
                     <span className="text-xs text-red-500 mt-0.5 line-clamp-1">{item.blocker_reason}</span>
                   )}
                 </div>
-                <span className={`font-medium ${statusClass}`}>
+                <Badge className={badgeClass}>
                   <span className="mr-1">{statusIcon}</span>
-                  {statusLabel}
-                </span>
+                  <span className={`font-medium ${statusClass}`}>{statusLabel}</span>
+                </Badge>
               </li>
             );
           })}
         </ul>
       )}
-    </section>
+    </Card>
   );
 };

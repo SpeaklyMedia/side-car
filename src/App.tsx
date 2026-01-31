@@ -7,6 +7,11 @@ import { ErrorPanel } from './components/ErrorPanel';
 import { RoadmapView } from './components/RoadmapView';
 import { RoadmapSelector } from './components/RoadmapSelector';
 import { VisualsHUD, SceneBackground, usePrefersReducedMotion, useScenePulse, type LiveStatus, type VisualsPhaseNavItem } from './visuals/app';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
+import { Card, cardClasses } from './ui/Card';
+import { Container } from './ui/Container';
+import { cn } from './ui/cn';
 
 /**
  * Main application component for the Side‑Car MVP. This component
@@ -48,7 +53,10 @@ function App() {
   // Idle detection: show return button after 7 seconds of inactivity when user
   // has scrolled or navigated away. We track last interaction time.
   const lastInteractionRef = useRef<number>(Date.now());
-  const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Visuals Hot-Swap (UI-only wiring)
   const reduceMotion = usePrefersReducedMotion();
@@ -259,6 +267,7 @@ function App() {
     const prev = prevMasterRef.current;
     if (typeof prev === 'number' && prev < 100 && masterProgress >= 100) {
       pulseScene();
+      showToast('Milestone: deliverables complete');
     }
     prevMasterRef.current = masterProgress;
   }, [currentRoadmap, masterProgress, pulseScene]);
@@ -335,12 +344,30 @@ function App() {
     setShowEditor(false);
   };
 
+  const handleResetView = () => {
+    setSelectedProjectId(null);
+    setSelectedRoadmapId(null);
+    setShowEditor(false);
+    setShowSelector(false);
+    setValidation(null);
+  };
+
   const buildShareLink = (projectId: string, roadmapId: string) => {
     const params = new URLSearchParams({
       projectId,
       roadmapId
     });
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  };
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 2400);
   };
 
   const handleCopyShareLink = (projectId: string, roadmapId: string) => {
@@ -363,6 +390,25 @@ function App() {
       }
       document.body.removeChild(textarea);
     }
+    showToast('Link copied');
+  };
+
+  const handleShareLink = async (projectId: string, roadmapId: string) => {
+    const link = buildShareLink(projectId, roadmapId);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Side-Car Roadmap',
+          text: 'Open this roadmap in Side‑Car.',
+          url: link
+        });
+        showToast('Share opened');
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+    handleCopyShareLink(projectId, roadmapId);
   };
 
   // Handle selection of project and roadmap from the selector.
@@ -428,22 +474,25 @@ function App() {
       )}
       {/* Home screen: list all projects when no project is selected */}
       {currentProject && currentRoadmap && (!validation || validation.errors.length === 0) ? (
-        <div className="max-w-screen-sm mx-auto px-4 py-4 space-y-4">
+        <Container>
           {/* Sticky header for project */}
-          <header className="sticky top-0 rounded-xl bg-white/80 backdrop-blur shadow p-4 flex flex-col gap-2 z-50">
+          <Card className="sticky top-0 p-4 flex flex-col gap-2 z-50">
             <div className="flex flex-wrap justify-between items-center gap-2">
               <h1 className="text-lg font-semibold truncate max-w-xs sm:max-w-sm">{currentProject.project_name}</h1>
-              <button
-                className="text-sm text-blue-600 hover:underline"
-                onClick={() => setShowSelector(true)}
-              >
+              <Button variant="link" size="sm" onClick={() => setShowSelector(true)}>
                 {currentRoadmap.roadmap_name}
-              </button>
+              </Button>
             </div>
             {/* Display lock label if present */}
-            {currentRoadmap.lock_label && (
-              <div className="text-xs text-gray-500 italic">{currentRoadmap.lock_label}</div>
-            )}
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              {currentRoadmap.lock_label && (
+                <span className="italic">{currentRoadmap.lock_label}</span>
+              )}
+              <Badge className={cn('text-xs', liveStatus === 'live' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600')}>
+                {liveStatus === 'live' ? 'Live' : liveStatus === 'error' ? 'Stream error' : 'Offline'}
+              </Badge>
+              <span>Updated {lastUpdatedLabel}</span>
+            </div>
             {/* Visuals Hot-Swap HUD (wired via visuals.active.json) */}
             <VisualsHUD
               masterProgress01={masterProgress01}
@@ -462,61 +511,75 @@ function App() {
 
             {/* Import data button for project view */}
             <div className="flex flex-wrap justify-end gap-2 mt-1">
-              <button
-                className="text-xs text-blue-600 hover:underline"
-                onClick={handleImportClick}
-              >
+              <Button variant="link" size="xs" onClick={handleImportClick}>
                 Import Data
-              </button>
-              <button
-                className="text-xs text-blue-600 hover:underline"
+              </Button>
+              <Button
+                variant="link"
+                size="xs"
                 onClick={() => handleCopyShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}
               >
                 Copy Share Link
-              </button>
+              </Button>
             </div>
-          </header>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                className="flex-1 min-w-[180px] rounded-lg border border-gray-200 bg-white/70 px-2 py-1 text-xs text-gray-700"
+                value={buildShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}
+                readOnly
+              />
+              <Button variant="secondary" size="xs" onClick={() => handleShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}>
+                Share
+              </Button>
+              <Button variant="secondary" size="xs" onClick={() => handleCopyShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}>
+                Copy
+              </Button>
+            </div>
+          </Card>
           {/* Main content for selected project */}
           <main className="pb-20"> {/* bottom padding for floating btn */}
             <RoadmapView roadmap={currentRoadmap} currentItemId={currentItem?.itemId} />
           </main>
-        </div>
+        </Container>
       ) : (
-        <div className="max-w-screen-sm mx-auto px-4 py-4 space-y-4">
+        <Container>
           {/* Home screen hero */}
-          <section className="rounded-xl bg-white/80 backdrop-blur shadow p-4 space-y-3">
+          <Card className="p-4 space-y-3">
             <div>
               <h1 className="text-2xl font-semibold">🛵 Side‑Car</h1>
               <p className="text-sm text-gray-600 mt-1">
                 Lightweight project roadmaps with live visuals, status clarity, and shareable links.
               </p>
+              <div className="mt-2 text-xs text-gray-500 space-y-1">
+                <div>1) Import or load a sample roadmap.</div>
+                <div>2) Track progress and blockers by phase.</div>
+                <div>3) Share a deep link to the exact roadmap.</div>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button
-                className="rounded-lg bg-blue-600 text-white text-sm px-3 py-2 shadow hover:bg-blue-700"
-                onClick={handleImportClick}
-              >
+              <Button variant="primary" size="sm" onClick={handleImportClick}>
                 Import Data
-              </button>
-              <button
-                className="rounded-lg bg-gray-100 text-gray-700 text-sm px-3 py-2 shadow hover:bg-gray-200"
-                onClick={handleLoadSample}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleLoadSample}>
                 Load Sample
-              </button>
-              <button
-                className="rounded-lg bg-gray-100 text-gray-700 text-sm px-3 py-2 shadow hover:bg-gray-200"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   const firstProject = data.projects[0];
                   if (!firstProject) return;
                   const defaultRoadmap = firstProject.default_roadmap_id ?? firstProject.roadmaps[0].roadmap_id;
-                  handleCopyShareLink(firstProject.project_id, defaultRoadmap);
+                  handleShareLink(firstProject.project_id, defaultRoadmap);
                 }}
               >
-                Copy Share Link
-              </button>
+                Share Link
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleResetView}>
+                Reset View
+              </Button>
             </div>
-          </section>
+          </Card>
           {/* Project list */}
           <main className="space-y-4">
             {data.projects.map((project) => {
@@ -524,7 +587,10 @@ function App() {
               return (
                 <button
                   key={project.project_id}
-                  className="block w-full rounded-xl bg-white/80 backdrop-blur p-4 shadow hover:bg-white text-left"
+                  className={cn(
+                    'block w-full p-4 text-left hover:bg-white',
+                    cardClasses
+                  )}
                   onClick={() => {
                     setSelectedProjectId(project.project_id);
                     setSelectedRoadmapId(defaultRoadmap);
@@ -538,7 +604,7 @@ function App() {
               );
             })}
           </main>
-        </div>
+        </Container>
       )}
       {/* Selector bottom sheet */}
       <RoadmapSelector
@@ -571,6 +637,11 @@ function App() {
         >
           Return to current task
         </button>
+      )}
+      {toastMessage && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-gray-900/90 px-4 py-2 text-xs text-white shadow-lg">
+          {toastMessage}
+        </div>
       )}
     </div>
       </div>
