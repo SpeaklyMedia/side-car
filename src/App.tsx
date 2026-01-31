@@ -335,6 +335,36 @@ function App() {
     setShowEditor(false);
   };
 
+  const buildShareLink = (projectId: string, roadmapId: string) => {
+    const params = new URLSearchParams({
+      projectId,
+      roadmapId
+    });
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  };
+
+  const handleCopyShareLink = (projectId: string, roadmapId: string) => {
+    const link = buildShareLink(projectId, roadmapId);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(link).catch(() => {
+        console.warn('Clipboard write failed');
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = link;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (err) {
+        console.warn('Clipboard fallback failed', err);
+      }
+      document.body.removeChild(textarea);
+    }
+  };
+
   // Handle selection of project and roadmap from the selector.
   const handleSelect = (projectId: string, roadmapId: string) => {
     setSelectedProjectId(projectId);
@@ -398,10 +428,10 @@ function App() {
       )}
       {/* Home screen: list all projects when no project is selected */}
       {currentProject && currentRoadmap && (!validation || validation.errors.length === 0) ? (
-        <>
+        <div className="max-w-screen-sm mx-auto px-4 py-4 space-y-4">
           {/* Sticky header for project */}
-          <header className="sticky top-0 bg-white shadow p-4 flex flex-col gap-2 z-50">
-            <div className="flex justify-between items-center">
+          <header className="sticky top-0 rounded-xl bg-white/80 backdrop-blur shadow p-4 flex flex-col gap-2 z-50">
+            <div className="flex flex-wrap justify-between items-center gap-2">
               <h1 className="text-lg font-semibold truncate max-w-xs sm:max-w-sm">{currentProject.project_name}</h1>
               <button
                 className="text-sm text-blue-600 hover:underline"
@@ -431,39 +461,70 @@ function App() {
             />
 
             {/* Import data button for project view */}
-            <div className="flex justify-end mt-1">
+            <div className="flex flex-wrap justify-end gap-2 mt-1">
               <button
                 className="text-xs text-blue-600 hover:underline"
                 onClick={handleImportClick}
               >
                 Import Data
               </button>
+              <button
+                className="text-xs text-blue-600 hover:underline"
+                onClick={() => handleCopyShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}
+              >
+                Copy Share Link
+              </button>
             </div>
           </header>
           {/* Main content for selected project */}
-          <main className="p-4 pb-20"> {/* bottom padding for floating btn */}
+          <main className="pb-20"> {/* bottom padding for floating btn */}
             <RoadmapView roadmap={currentRoadmap} currentItemId={currentItem?.itemId} />
           </main>
-        </>
+        </div>
       ) : (
-        <>
-        {/* Home screen header */}
-          <header className="sticky top-0 bg-white shadow p-4 flex justify-between items-center z-50">
-            <h1 className="text-lg font-semibold">Side‑Car Projects</h1>
-            <button
-              className="text-sm text-blue-600 hover:underline"
-              onClick={handleImportClick}
-            >
-              Import Data
-            </button>
-          </header>
-          <main className="p-4 space-y-4">
+        <div className="max-w-screen-sm mx-auto px-4 py-4 space-y-4">
+          {/* Home screen hero */}
+          <section className="rounded-xl bg-white/80 backdrop-blur shadow p-4 space-y-3">
+            <div>
+              <h1 className="text-2xl font-semibold">🛵 Side‑Car</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Lightweight project roadmaps with live visuals, status clarity, and shareable links.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="rounded-lg bg-blue-600 text-white text-sm px-3 py-2 shadow hover:bg-blue-700"
+                onClick={handleImportClick}
+              >
+                Import Data
+              </button>
+              <button
+                className="rounded-lg bg-gray-100 text-gray-700 text-sm px-3 py-2 shadow hover:bg-gray-200"
+                onClick={handleLoadSample}
+              >
+                Load Sample
+              </button>
+              <button
+                className="rounded-lg bg-gray-100 text-gray-700 text-sm px-3 py-2 shadow hover:bg-gray-200"
+                onClick={() => {
+                  const firstProject = data.projects[0];
+                  if (!firstProject) return;
+                  const defaultRoadmap = firstProject.default_roadmap_id ?? firstProject.roadmaps[0].roadmap_id;
+                  handleCopyShareLink(firstProject.project_id, defaultRoadmap);
+                }}
+              >
+                Copy Share Link
+              </button>
+            </div>
+          </section>
+          {/* Project list */}
+          <main className="space-y-4">
             {data.projects.map((project) => {
               const defaultRoadmap = project.default_roadmap_id ?? project.roadmaps[0].roadmap_id;
               return (
                 <button
                   key={project.project_id}
-                  className="block w-full border rounded-lg bg-white p-4 shadow hover:bg-gray-50 text-left"
+                  className="block w-full rounded-xl bg-white/80 backdrop-blur p-4 shadow hover:bg-white text-left"
                   onClick={() => {
                     setSelectedProjectId(project.project_id);
                     setSelectedRoadmapId(defaultRoadmap);
@@ -477,7 +538,7 @@ function App() {
               );
             })}
           </main>
-        </>
+        </div>
       )}
       {/* Selector bottom sheet */}
       <RoadmapSelector

@@ -20,7 +20,7 @@ export interface PhaseCardProps {
 export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle, currentItemId }) => {
   const phaseProgress = computePhaseProgress(phase);
   return (
-    <section id={`phase-${phase.phase_id}`} className="border rounded-lg bg-white shadow-sm">
+    <section id={`phase-${phase.phase_id}`} className="rounded-xl bg-white/80 backdrop-blur shadow">
       {/* Phase header */}
       <header
         className="flex justify-between items-center p-3 cursor-pointer"
@@ -41,27 +41,32 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
       {/* Phase items */}
       {expanded && (
         <ul className="divide-y text-sm">
-        {phase.items.map((item) => {
+          {phase.items.map((item) => {
             // Determine styling based on status
             let statusClass = '';
             let statusLabel: React.ReactNode;
+            let statusIcon: React.ReactNode;
             switch (item.status) {
               case 'done':
                 statusClass = 'text-green-600';
                 statusLabel = 'Done';
+                statusIcon = '✅';
                 break;
               case 'in_progress':
                 statusClass = 'text-orange-600';
                 statusLabel = `${item.progress ?? 0}%`;
+                statusIcon = '⏳';
                 break;
               case 'blocked':
                 statusClass = 'text-red-600';
                 statusLabel = `${item.progress ?? 0}%`;
+                statusIcon = '⛔';
                 break;
               case 'not_started':
               default:
                 statusClass = 'text-gray-500';
                 statusLabel = 'Not started';
+                statusIcon = '⭕';
             }
             // Highlight the current item, if provided
             const highlight = currentItemId && item.item_id === currentItemId;
@@ -81,7 +86,10 @@ export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle,
                     <span className="text-xs text-red-500 mt-0.5 line-clamp-1">{item.blocker_reason}</span>
                   )}
                 </div>
-                <span className={`font-medium ${statusClass}`}>{statusLabel}</span>
+                <span className={`font-medium ${statusClass}`}>
+                  <span className="mr-1">{statusIcon}</span>
+                  {statusLabel}
+                </span>
               </li>
             );
           })}

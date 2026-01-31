@@ -46,7 +46,7 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
   return (
     <div>
       {/* Summary strip for the roadmap */}
-      <div className="space-y-1 mb-4">
+      <div className="space-y-1 mb-4 rounded-xl bg-white/80 backdrop-blur shadow p-3">
         {/* Master progress bar */}
         <div className="flex flex-col gap-1">
           <ProgressBar value={masterProgress} />
