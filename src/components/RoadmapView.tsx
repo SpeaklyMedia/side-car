@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
-import type { Roadmap } from '../types';
+import React, { useMemo, useState } from 'react';
+import type { Roadmap, Item } from '../types';
 import { computeMasterProgress, computeOverallProgress, computePhaseProgress } from '../utils';
 import { PhaseCard } from './PhaseCard';
 import { ProgressBar } from './ProgressBar';
 import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { cn } from '../ui/cn';
+
+type FilterKey = 'all' | 'blocked' | 'in_progress' | 'done';
+
+const filterOptions: Array<{ key: FilterKey; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'blocked', label: 'Blocked' },
+  { key: 'in_progress', label: 'In‑Progress' },
+  { key: 'done', label: 'Done' }
+];
 
 export interface RoadmapViewProps {
   roadmap: Roadmap;
@@ -18,6 +29,7 @@ export interface RoadmapViewProps {
  * collapsible items.
  */
 export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, currentItemId }) => {
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   // Track which phases are expanded. Default: first incomplete phase expanded.
   const [expandedPhases, setExpandedPhases] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
@@ -44,10 +56,22 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
     setExpandedPhases((prev) => ({ ...prev, [phaseId]: !prev[phaseId] }));
   };
 
+  const matchesFilter = (item: Item) =>
+    activeFilter === 'all' ? true : item.status === activeFilter;
+
+  const filteredPhases = useMemo(() => {
+    return roadmap.phases
+      .map((phase) => ({
+        ...phase,
+        items: phase.items.filter(matchesFilter)
+      }))
+      .filter((phase) => phase.items.length > 0 || activeFilter === 'all');
+  }, [roadmap.phases, activeFilter]);
+
   return (
     <div>
       {/* Summary strip for the roadmap */}
-      <Card className="space-y-1 mb-4 p-3">
+      <Card className="space-y-3 mb-4 p-3">
         {/* Master progress bar */}
         <div className="flex flex-col gap-1">
           <ProgressBar value={masterProgress} />
@@ -59,10 +83,23 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
             <span>Blocked: {blockedItems}</span>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2">
+          {filterOptions.map((opt) => (
+            <Button
+              key={opt.key}
+              size="xs"
+              variant={activeFilter === opt.key ? 'primary' : 'secondary'}
+              className={cn(activeFilter === opt.key ? '' : 'text-gray-700')}
+              onClick={() => setActiveFilter(opt.key)}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
       </Card>
       {/* Phase cards */}
       <div className="space-y-4">
-        {roadmap.phases.map((phase) => (
+        {filteredPhases.map((phase) => (
           <PhaseCard
             key={phase.phase_id}
             phase={phase}
