@@ -30,3 +30,4 @@
 - npm run build
 - npm run preview (manual spot check)
 - ✅ npm run qa:predeploy PASS (includes CSS compile proof)
+- ✅ npm run verify:dist PASS (asset size budget)

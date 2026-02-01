@@ -11,6 +11,7 @@ import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { Card, cardClasses } from './ui/Card';
 import { Container } from './ui/Container';
+import { ContentScrim } from './ui/ContentScrim';
 import { cn } from './ui/cn';
 
 /**
@@ -504,7 +505,8 @@ function App() {
       {currentProject && currentRoadmap && (!validation || validation.errors.length === 0) ? (
         <Container>
           {/* Sticky header for project */}
-          <Card className="sticky top-0 p-4 flex flex-col gap-2 z-50">
+          <Card className="sticky top-0 z-50 p-0">
+            <ContentScrim className="p-4">
             <div className="flex flex-wrap justify-between items-center gap-2">
               <h1 className="text-lg font-semibold truncate max-w-xs sm:max-w-sm">
                 <span className="mr-2" aria-hidden="true">{getProjectEmoji(currentProject.project_name)}</span>
@@ -588,6 +590,7 @@ function App() {
                 Copy
               </Button>
             </div>
+            </ContentScrim>
           </Card>
           {/* Main content for selected project */}
           <main className="pb-20"> {/* bottom padding for floating btn */}
@@ -597,7 +600,8 @@ function App() {
       ) : (
         <Container>
           {/* Home screen hero */}
-          <Card className="p-4 space-y-3">
+          <Card className="p-0">
+            <ContentScrim className="p-4 space-y-3" tone="strong">
             <div>
               <h1 className="text-2xl font-semibold">🛵 Side‑Car</h1>
               <p className="text-sm text-gray-600 mt-1">
@@ -632,6 +636,7 @@ function App() {
                 Reset View
               </Button>
             </div>
+            </ContentScrim>
           </Card>
           {/* Project list */}
           <main className="space-y-4">

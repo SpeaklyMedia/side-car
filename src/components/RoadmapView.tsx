@@ -4,6 +4,7 @@ import { computeMasterProgress, computeOverallProgress, computePhaseProgress } f
 import { PhaseCard } from './PhaseCard';
 import { ProgressBar } from './ProgressBar';
 import { Card } from '../ui/Card';
+import { ContentScrim } from '../ui/ContentScrim';
 import { Button } from '../ui/Button';
 import { cn } from '../ui/cn';
 
@@ -71,31 +72,33 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap, onFocus, curr
   return (
     <div>
       {/* Summary strip for the roadmap */}
-      <Card className="space-y-3 mb-4 p-3">
-        {/* Master progress bar */}
-        <div className="flex flex-col gap-1">
-          <ProgressBar value={masterProgress} />
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>Overall: {overallProgress}%</span>
-            <span>Deliverables: {masterProgress}%</span>
-            <span>Items: {totalItems}</span>
-            <span>Done: {doneItems}</span>
-            <span>Blocked: {blockedItems}</span>
+      <Card className="p-0 mb-4">
+        <ContentScrim className="space-y-3 p-3">
+          {/* Master progress bar */}
+          <div className="flex flex-col gap-1">
+            <ProgressBar value={masterProgress} />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Overall: {overallProgress}%</span>
+              <span>Deliverables: {masterProgress}%</span>
+              <span>Items: {totalItems}</span>
+              <span>Done: {doneItems}</span>
+              <span>Blocked: {blockedItems}</span>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {filterOptions.map((opt) => (
-            <Button
-              key={opt.key}
-              size="xs"
-              variant={activeFilter === opt.key ? 'primary' : 'secondary'}
-              className={cn(activeFilter === opt.key ? '' : 'text-gray-700')}
-              onClick={() => setActiveFilter(opt.key)}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
+          <div className="flex flex-wrap gap-2">
+            {filterOptions.map((opt) => (
+              <Button
+                key={opt.key}
+                size="xs"
+                variant={activeFilter === opt.key ? 'primary' : 'secondary'}
+                className={cn(activeFilter === opt.key ? '' : 'text-gray-700')}
+                onClick={() => setActiveFilter(opt.key)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </ContentScrim>
       </Card>
       {/* Phase cards */}
       <div className="space-y-4">

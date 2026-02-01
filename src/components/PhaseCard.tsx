@@ -3,6 +3,7 @@ import type { Phase } from '../types';
 import { computePhaseProgress } from '../utils';
 import { ProgressBar } from './ProgressBar';
 import { Card } from '../ui/Card';
+import { ContentScrim } from '../ui/ContentScrim';
 import { Badge } from '../ui/Badge';
 
 export interface PhaseCardProps {
@@ -22,31 +23,33 @@ export interface PhaseCardProps {
 export const PhaseCard: React.FC<PhaseCardProps> = ({ phase, expanded, onToggle, currentItemId }) => {
   const phaseProgress = computePhaseProgress(phase);
   return (
-    <Card id={`phase-${phase.phase_id}`}>
-      {/* Phase header */}
-      <header
-        className="flex justify-between items-center p-3 cursor-pointer"
-        onClick={onToggle}
-        aria-expanded={expanded}
-      >
-        <div className="flex flex-col">
-          <h2 className="font-medium text-sm sm:text-base">
-            <span className="mr-2" aria-hidden="true">🧩</span>
-            {phase.phase_name}
-          </h2>
-          {phase.phase_desc && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{phase.phase_desc}</p>}
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Display progress as number */}
-          <span className="text-sm text-gray-600">{phaseProgress}%</span>
-          {/* Expand/collapse indicator */}
-          <span className="text-gray-500">{expanded ? '▲' : '▼'}</span>
-        </div>
-      </header>
+    <Card id={`phase-${phase.phase_id}`} className="p-0">
+      <ContentScrim className="p-3">
+        {/* Phase header */}
+        <header
+          className="flex justify-between items-center cursor-pointer"
+          onClick={onToggle}
+          aria-expanded={expanded}
+        >
+          <div className="flex flex-col">
+            <h2 className="font-medium text-sm sm:text-base">
+              <span className="mr-2" aria-hidden="true">🧩</span>
+              {phase.phase_name}
+            </h2>
+            {phase.phase_desc && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{phase.phase_desc}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Display progress as number */}
+            <span className="text-sm text-gray-600">{phaseProgress}%</span>
+            {/* Expand/collapse indicator */}
+            <span className="text-gray-500">{expanded ? '▲' : '▼'}</span>
+          </div>
+        </header>
+      </ContentScrim>
       {/* Phase items */}
       {expanded && (
         <ul className="divide-y text-sm">
-          {phase.items.map((item) => {
+        {phase.items.map((item) => {
             // Determine styling based on status
             let statusClass = '';
             let statusLabel: React.ReactNode;
