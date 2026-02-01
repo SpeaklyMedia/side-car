@@ -343,10 +343,11 @@ function App() {
   const handleRenderCustom = () => {
     try {
       const parsed = JSON.parse(jsonInput);
-      const result = validateSidecarRoadmap(parsed);
+      const payload = parsed?.data && parsed.data.contract_version ? parsed.data : parsed;
+      const result = validateSidecarRoadmap(payload);
       setValidation(result);
       if (result.errors.length === 0) {
-        setData(parsed);
+        setData(payload);
         setLastUpdatedAt(new Date());
         setSelectedProjectId(null);
         setSelectedRoadmapId(null);
@@ -512,6 +513,45 @@ function App() {
       roadmapId
     });
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  };
+
+  const handleExportJson = () => {
+    const appCommit = (import.meta as any).env?.VITE_APP_COMMIT ?? 'unknown';
+    let exportPayload: SidecarRoadmap;
+    if (currentProject && currentRoadmap) {
+      exportPayload = {
+        contract_version: data.contract_version,
+        projects: [
+          {
+            ...currentProject,
+            default_roadmap_id: currentRoadmap.roadmap_id,
+            roadmaps: [currentRoadmap]
+          }
+        ]
+      };
+    } else {
+      exportPayload = data;
+    }
+    const payloadWithMeta = {
+      ...exportPayload,
+      schemaVersion: exportPayload.contract_version,
+      exportedAt: new Date().toISOString(),
+      appCommit
+    };
+    const blob = new Blob([JSON.stringify(payloadWithMeta, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const fileSafe = currentProject?.project_name
+      ? currentProject.project_name.toLowerCase().replace(/[^a-z0-9]+/gi, '_')
+      : 'sidecar';
+    const name = `sidecar_export_${fileSafe}_${new Date().toISOString().slice(0, 10)}.json`;
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = name;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    showToast('Exported JSON');
   };
 
   const showToast = (message: string) => {
@@ -742,6 +782,9 @@ function App() {
               <Button variant="link" size="xs" onClick={handleImportClick}>
                 Import Data
               </Button>
+              <Button variant="link" size="xs" onClick={handleExportJson}>
+                Export JSON
+              </Button>
               <Button variant="link" size="xs" onClick={() => setTemplateMode('insert')}>
                 Insert Template Sections
               </Button>
@@ -765,6 +808,9 @@ function App() {
               <Button variant="secondary" size="xs" onClick={() => handleCopyShareLink(currentProject.project_id, currentRoadmap.roadmap_id)}>
                 Copy
               </Button>
+            </div>
+            <div className="text-[11px] text-gray-500 mt-1">
+              Share link selects; export shares data.
             </div>
             </ContentScrim>
           </Card>
@@ -792,6 +838,9 @@ function App() {
             <div className="flex flex-wrap gap-2">
               <Button variant="primary" size="sm" onClick={handleImportClick}>
                 Import Data
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleExportJson}>
+                Export JSON
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setTemplateMode('new')}>
                 New from Template
