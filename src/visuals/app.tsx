@@ -16,7 +16,7 @@ import scenesMap from "./packs/scenes/cleanBright_v1/scenes.map.json";
  * - Packs are hot-swappable: the active pack ids come from visuals.active.json.
  */
 
-export type LiveStatus = "live" | "offline" | "error";
+export type LiveStatus = "live" | "connecting" | "reconnecting" | "disconnected";
 
 export interface VisualsPhaseNavItem {
   phaseId: string;
@@ -174,10 +174,17 @@ export function VisualsHUD(props: VisualsHUDProps) {
   // If visuals.active.json disables visualization, render nothing.
   if (!hudPackId) return null;
 
-  const liveLabel = liveStatus === "live" ? "LIVE" : liveStatus === "error" ? "ERR" : "OFF";
+  const liveLabel =
+    liveStatus === "live"
+      ? "LIVE"
+      : liveStatus === "reconnecting"
+        ? "RETRY"
+        : liveStatus === "connecting"
+          ? "CONNECT"
+          : "OFF";
 
   const phaseBarState =
-    liveStatus === "error"
+    liveStatus === "disconnected"
       ? "error"
       : masterProgress01 >= 1
         ? "complete"

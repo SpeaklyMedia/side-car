@@ -48,13 +48,14 @@ function App() {
 
   // UI-only metadata (does not affect ingestion/state semantics)
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date>(() => new Date());
-  const [liveStatus, setLiveStatus] = useState<LiveStatus>('offline');
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('disconnected');
 
   // Idle detection: show return button after 7 seconds of inactivity when user
   // has scrolled or navigated away. We track last interaction time.
   const lastInteractionRef = useRef<number>(Date.now());
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sseRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -153,46 +154,66 @@ function App() {
   useEffect(() => {
     const streamUrl = (import.meta as any).env?.VITE_SIDECAR_STREAM_URL as string | undefined;
     if (!streamUrl) {
-      setLiveStatus('offline');
+      setLiveStatus('disconnected');
       return;
     }
-    const es = new EventSource(streamUrl);
-    // Mark live once the stream opens.
-    es.onopen = () => setLiveStatus('live');
-    es.onmessage = (ev) => {
-      try {
-        const parsed = JSON.parse(ev.data);
-        const result = validateSidecarRoadmap(parsed);
-        if (result.errors.length === 0) {
-          setData(parsed);
-          setLastUpdatedAt(new Date());
-          setLiveStatus('live');
-          // Reset selection to home screen upon incoming dynamic update.
-          setSelectedProjectId(null);
-          setSelectedRoadmapId(null);
-          setValidation(result);
-          // Compute the current item from the first project/roadmap in the incoming state.
-          if (parsed.projects && parsed.projects.length > 0) {
-            const p0 = parsed.projects[0];
-            if (p0.roadmaps && p0.roadmaps.length > 0) {
-              const r0 = p0.roadmaps[0];
-              const ci = findFirstIncompleteItem(r0);
-              setCurrentItem(ci);
+
+    let es: EventSource | null = null;
+    let attempt = 0;
+
+    const connect = () => {
+      setLiveStatus(attempt === 0 ? 'connecting' : 'reconnecting');
+      es?.close();
+      es = new EventSource(streamUrl);
+      // Mark live once the stream opens.
+      es.onopen = () => {
+        attempt = 0;
+        setLiveStatus('live');
+      };
+      es.onmessage = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.data);
+          const result = validateSidecarRoadmap(parsed);
+          if (result.errors.length === 0) {
+            setData(parsed);
+            setLastUpdatedAt(new Date());
+            setLiveStatus('live');
+            // Reset selection to home screen upon incoming dynamic update.
+            setSelectedProjectId(null);
+            setSelectedRoadmapId(null);
+            setValidation(result);
+            // Compute the current item from the first project/roadmap in the incoming state.
+            if (parsed.projects && parsed.projects.length > 0) {
+              const p0 = parsed.projects[0];
+              if (p0.roadmaps && p0.roadmaps.length > 0) {
+                const r0 = p0.roadmaps[0];
+                const ci = findFirstIncompleteItem(r0);
+                setCurrentItem(ci);
+              }
             }
+          } else {
+            console.error('Dynamic update contained errors', result.errors);
           }
-        } else {
-          console.error('Dynamic update contained errors', result.errors);
+        } catch (e) {
+          console.error('Failed to parse dynamic update', e);
         }
-      } catch (e) {
-        console.error('Failed to parse dynamic update', e);
-      }
+      };
+      es.onerror = (ev) => {
+        console.warn('SSE connection error', ev);
+        es?.close();
+        attempt += 1;
+        setLiveStatus('reconnecting');
+        const delay = Math.min(8000, 1000 * Math.pow(2, Math.max(0, attempt - 1)));
+        if (sseRetryRef.current) clearTimeout(sseRetryRef.current);
+        sseRetryRef.current = setTimeout(connect, delay);
+      };
     };
-    es.onerror = (ev) => {
-      console.warn('SSE connection error', ev);
-      setLiveStatus('error');
-    };
+
+    connect();
+
     return () => {
-      es.close();
+      if (sseRetryRef.current) clearTimeout(sseRetryRef.current);
+      es?.close();
     };
   }, []);
 
@@ -254,7 +275,7 @@ function App() {
         prevPivotalRef.current.phaseId !== next.phaseId;
 
       if (changed && currentProject && currentRoadmap) {
-        pulseScene();
+        if (!reduceMotion) pulseScene();
       }
     }
     prevPivotalRef.current = next;
@@ -266,8 +287,8 @@ function App() {
     if (!currentRoadmap) return;
     const prev = prevMasterRef.current;
     if (typeof prev === 'number' && prev < 100 && masterProgress >= 100) {
-      pulseScene();
-      showToast('Milestone: deliverables complete');
+      if (!reduceMotion) pulseScene();
+      if (!reduceMotion) showToast('Milestone: deliverables complete');
     }
     prevMasterRef.current = masterProgress;
   }, [currentRoadmap, masterProgress, pulseScene]);
@@ -499,8 +520,29 @@ function App() {
               {currentRoadmap.lock_label && (
                 <span className="italic">{currentRoadmap.lock_label}</span>
               )}
-              <Badge className={cn('text-xs', liveStatus === 'live' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600')}>
-                {liveStatus === 'live' ? 'Live' : liveStatus === 'error' ? 'Stream error' : 'Offline'}
+              <Badge
+                className={cn(
+                  'text-xs',
+                  liveStatus === 'live'
+                    ? 'bg-green-100 text-green-700'
+                    : liveStatus === 'disconnected'
+                      ? 'bg-red-100 text-red-700'
+                    : liveStatus === 'reconnecting'
+                      ? 'bg-orange-100 text-orange-700'
+                    : liveStatus === 'connecting'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-100 text-gray-600'
+                )}
+              >
+                {liveStatus === 'live'
+                  ? 'Live'
+                  : liveStatus === 'disconnected'
+                    ? 'Disconnected'
+                  : liveStatus === 'reconnecting'
+                    ? 'Reconnecting'
+                  : liveStatus === 'connecting'
+                    ? 'Connecting'
+                    : 'Offline'}
               </Badge>
               <span>Updated {lastUpdatedLabel}</span>
             </div>
