@@ -13,6 +13,8 @@ import { Card, cardClasses } from './ui/Card';
 import { Container } from './ui/Container';
 import { ContentScrim } from './ui/ContentScrim';
 import { cn } from './ui/cn';
+import { templates } from './templates';
+import type { Status } from './types';
 
 /**
  * Main application component for the Side‑Car MVP. This component
@@ -40,6 +42,8 @@ function App() {
   // Editor overlay visibility and content.
   const [showEditor, setShowEditor] = useState(false);
   const [jsonInput, setJsonInput] = useState(() => JSON.stringify(sampleData, null, 2));
+  const [selectedTemplateId, setSelectedTemplateId] = useState(() => templates[0]?.id ?? '');
+  const [templateMode, setTemplateMode] = useState<'new' | 'insert' | null>(null);
   // Validation result for the currently loaded data or the draft in the editor.
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   // Currently focused item (phaseId + itemId).  Used to scroll to the next
@@ -366,6 +370,134 @@ function App() {
     setShowEditor(false);
   };
 
+  const getTemplateById = (id: string) => templates.find((tpl) => tpl.id === id) ?? templates[0];
+
+  const STORAGE_KEY = 'sidecar_roadmap_state_v1';
+
+  const persistData = (next: SidecarRoadmap) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn('Failed to persist roadmap', e);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored);
+      const result = validateSidecarRoadmap(parsed);
+      if (result.errors.length === 0) {
+        setData(parsed);
+        setLastUpdatedAt(new Date());
+        setValidation(result);
+        setSelectedProjectId(null);
+        setSelectedRoadmapId(null);
+      }
+    } catch (e) {
+      console.warn('Failed to load stored roadmap', e);
+    }
+  }, []);
+
+  const applyTemplate = (mode: 'insert' | 'new') => {
+    const template = getTemplateById(selectedTemplateId);
+    if (!template) return;
+
+    const makeUnique = (id: string, set: Set<string>) => {
+      let next = id;
+      let i = 1;
+      while (set.has(next)) {
+        next = `${id}_${i}`;
+        i += 1;
+      }
+      set.add(next);
+      return next;
+    };
+
+    if (mode === 'new') {
+      const projectIdBase = template.id.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+      const projectId = `${projectIdBase}_${Date.now()}`;
+      const roadmapId = `${projectId}_roadmap`;
+      const phases = template.phases.map((phase) => ({
+        ...phase,
+        phase_id: `${phase.phase_id}_${Date.now()}`,
+        items: phase.items.map((item) => ({
+          ...item,
+          item_id: `${item.item_id}_${Date.now()}`,
+          status: 'not_started' as Status,
+          progress: undefined,
+          blocker_reason: undefined
+        }))
+      }));
+
+      const next: SidecarRoadmap = {
+        ...data,
+        projects: [
+          {
+            project_id: projectId,
+            project_name: template.name,
+            project_desc: template.description,
+            default_roadmap_id: roadmapId,
+            roadmaps: [
+              {
+                roadmap_id: roadmapId,
+                roadmap_name: template.name,
+                phases
+              }
+            ]
+          },
+          ...data.projects
+        ]
+      };
+
+      setData(next);
+      setSelectedProjectId(projectId);
+      setSelectedRoadmapId(roadmapId);
+      setTemplateMode(null);
+      showToast('Created');
+      persistData(next);
+      return;
+    }
+
+    if (!currentProject || !currentRoadmap) return;
+    const phaseIds = new Set(currentRoadmap.phases.map((p) => p.phase_id));
+    const itemIds = new Set(currentRoadmap.phases.flatMap((p) => p.items.map((i) => i.item_id)));
+
+    const clonedPhases = template.phases.map((phase) => {
+      const phase_id = makeUnique(phase.phase_id, phaseIds);
+      const items = phase.items.map((item) => ({
+        ...item,
+        item_id: makeUnique(item.item_id, itemIds),
+        status: 'not_started' as Status,
+        progress: undefined,
+        blocker_reason: undefined
+      }));
+      return { ...phase, phase_id, items };
+    });
+
+    const next: SidecarRoadmap = {
+      ...data,
+      projects: data.projects.map((project) =>
+        project.project_id !== currentProject.project_id
+          ? project
+          : {
+              ...project,
+              roadmaps: project.roadmaps.map((roadmap) =>
+                roadmap.roadmap_id !== currentRoadmap.roadmap_id
+                  ? roadmap
+                  : { ...roadmap, phases: [...roadmap.phases, ...clonedPhases] }
+              )
+            }
+      )
+    };
+
+    setData(next);
+    setTemplateMode(null);
+    showToast(`Inserted ${clonedPhases.length} phases`);
+    persistData(next);
+  };
+
   const handleResetView = () => {
     setSelectedProjectId(null);
     setSelectedRoadmapId(null);
@@ -489,6 +621,47 @@ function App() {
           </div>
         </div>
       )}
+      {templateMode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white w-11/12 sm:w-3/4 md:w-2/3 max-h-[90vh] overflow-y-auto p-4 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-3">
+              {templateMode === 'new' ? 'New from Template' : 'Insert Template Sections'}
+            </h2>
+            <div className="space-y-3">
+              {templates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  className={cn(
+                    'w-full text-left rounded-lg border p-3',
+                    selectedTemplateId === tpl.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  )}
+                  onClick={() => setSelectedTemplateId(tpl.id)}
+                >
+                  <div className="font-medium text-gray-900">
+                    <span className="mr-2" aria-hidden="true">{tpl.emoji}</span>
+                    {tpl.name}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">{tpl.description}</div>
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                className="bg-gray-100 text-gray-700 px-3 py-2 rounded hover:bg-gray-200 text-sm"
+                onClick={() => setTemplateMode(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+                onClick={() => applyTemplate(templateMode)}
+              >
+                {templateMode === 'new' ? 'Create Project' : 'Insert Sections'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* If validation errors exist (and not editing), show the error panel */}
       {validation?.errors.length && !showEditor ? (
@@ -569,6 +742,9 @@ function App() {
               <Button variant="link" size="xs" onClick={handleImportClick}>
                 Import Data
               </Button>
+              <Button variant="link" size="xs" onClick={() => setTemplateMode('insert')}>
+                Insert Template Sections
+              </Button>
               <Button
                 variant="link"
                 size="xs"
@@ -616,6 +792,9 @@ function App() {
             <div className="flex flex-wrap gap-2">
               <Button variant="primary" size="sm" onClick={handleImportClick}>
                 Import Data
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setTemplateMode('new')}>
+                New from Template
               </Button>
               <Button variant="secondary" size="sm" onClick={handleLoadSample}>
                 Load Sample
