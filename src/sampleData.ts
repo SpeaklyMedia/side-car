@@ -3,66 +3,14 @@
 // and testing. It matches the example provided in the specification.
 
 import type { SidecarRoadmap } from './types';
+import sidecarSample from './data/samples/sidecar_v1.json';
+
+const sidecarData = sidecarSample as SidecarRoadmap;
 
 export const sampleData: SidecarRoadmap = {
   contract_version: 'sidecar_roadmap_v1',
   projects: [
-    {
-      project_id: 'sidecar',
-      project_name: 'Side‑Car',
-      project_desc: 'Stand-alone mobile-first roadmap + progress visualizer.',
-      default_roadmap_id: 'ship_mvp',
-      roadmaps: [
-        {
-          roadmap_id: 'ship_mvp',
-          roadmap_name: 'Ship MVP',
-          lock_label: 'LOCKED: roadmaps + progress bars only',
-          phases: [
-            {
-              phase_id: 'p0',
-              phase_name: 'P0 — MVP Shipment',
-              items: [
-                { item_id: 'ui_mobile', title: 'Mobile-first UI shell', status: 'done' },
-                {
-                  item_id: 'input_paste',
-                  title: 'Paste JSON input + render',
-                  status: 'in_progress',
-                  progress: 60,
-                  detail: 'Parser wired; UI polish pending',
-                },
-                {
-                  item_id: 'validation',
-                  title: 'Validation + error panel',
-                  status: 'in_progress',
-                  progress: 40,
-                },
-                {
-                  item_id: 'switching',
-                  title: 'Project/roadmap switcher',
-                  status: 'not_started',
-                },
-                {
-                  item_id: 'a11y',
-                  title: 'Accessibility pass',
-                  status: 'blocked',
-                  progress: 10,
-                  blocker_reason: 'Need final component structure before audit',
-                },
-              ],
-            },
-            {
-              phase_id: 'qa_release',
-              phase_name: 'QA + Locked Release',
-              items: [
-                { item_id: 'qa_checklist', title: 'QA checklist + PASS proof doc', status: 'not_started' },
-                { item_id: 'release_zip', title: 'Release ZIP + manifest + SHA256', status: 'not_started' },
-                { item_id: 'release_notes', title: 'Release notes + version tag', status: 'not_started' },
-              ],
-            },
-          ],
-        },
-      ],
-    },
+    sidecarData.projects[0],
     {
       project_id: 'grandcrew',
       project_name: 'Grand Crew Hospitality',
